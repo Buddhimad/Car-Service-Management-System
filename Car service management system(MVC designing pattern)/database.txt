@@ -1,0 +1,268 @@
+create database Abenayakeservice;
+use Abenayakeservice;
+
+CREATE TABLE Customer(
+	CustomerID VARCHAR(16) NOT NULL,
+	name VARCHAR(25),
+	address VARCHAR(30) NOT NULL,
+	telephoneno INT(10) NOT NULL,
+	date DATE,
+	CONSTRAINT PRIMARY KEY (CustomerID)
+);
+CREATE TABLE Vehicle(
+	vehicleno VARCHAR(20) NOT NULL,
+	CustomerID VARCHAR(16),
+	brand VARCHAR(30) NOT NULL,
+	model VARCHAR(30) NOT NULL,
+	enginetype VARCHAR(25) NOT NULL,
+	vehicletype VARCHAR(30) NOT NULL,
+	CONSTRAINT PRIMARY KEY (CustomerID),
+	CONSTRAINT FOREIGN KEY(CustomerID) REFERENCES Customer(CustomerID)
+	ON UPDATE CASCADE ON DELETE CASCADE
+);
+CREATE TABLE Servicecategory(
+	CategoryID VARCHAR(20) NOT NULL,
+	vehicletype VARCHAR(16),
+	description VARCHAR(30) NOT NULL,
+	charge INT(30) NOT NULL,
+	CONSTRAINT PRIMARY KEY (CategoryID),
+);
+CREATE TABLE Serviceinvoice(
+	invoiceno VARCHAR(20) NOT NULL,
+	vehicleno VARCHAR(16),
+	milage decimal(10,2) NOT NULL,
+	date DATE NOT NULL,
+	CONSTRAINT PRIMARY KEY (invoiceno),
+	CONSTRAINT FOREIGN KEY(vehicleno) REFERENCES Vehicle(vehicleno)
+	ON UPDATE CASCADE ON DELETE CASCADE
+);
+CREATE TABLE Servicedetails(
+	CategoryID VARCHAR(20) NOT NULL,
+	invoiceno VARCHAR(16),
+	CONSTRAINT FOREIGN KEY(CategoryID) REFERENCES Servicecategory(CategoryID)
+	ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT FOREIGN KEY(invoiceno) REFERENCES Serviceinvoice(invoiceno)
+	ON UPDATE CASCADE ON DELETE CASCADE
+);
+CREATE TABLE Customerpayment(
+	PaymentID VARCHAR(20) NOT NULL,
+	invoiceno VARCHAR(16),
+	amount decimal(10,3) NOT NULL,
+	date DATE NOT NULL,
+	CONSTRAINT PRIMARY KEY (PaymentID),
+	CONSTRAINT FOREIGN KEY(invoiceno) REFERENCES Serviceinvoice(invoiceno)
+	ON UPDATE CASCADE ON DELETE CASCADE
+);
+CREATE TABLE batch(
+	batchno VARCHAR(20) NOT NULL,
+	invoiceno VARCHAR(16),
+	amount decimal(10,3) NOT NULL,
+	date DATE NOT NULL,
+	CONSTRAINT PRIMARY KEY (batchno),
+	CONSTRAINT FOREIGN KEY(invoiceno) REFERENCES Serviceinvoice(invoiceno)
+	ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE Serviceitemdetails(
+	invoiceno VARCHAR(20) NOT NULL,
+	batchno VARCHAR(16),
+	qty decimal(10,2) NOT NULL,
+	totaldiscount decimal(10,3) NOT NULL,
+	totalamount decimal(10,3) NOT NULL,
+	CONSTRAINT FOREIGN KEY(invoiceno) REFERENCES Serviceinvoice(invoiceno)
+	ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT FOREIGN KEY(batchno) REFERENCES batch(batchno)
+	ON UPDATE CASCADE ON DELETE CASCADE
+);
+CREATE TABLE Supplierpayment(
+	paymentID VARCHAR(20) NOT NULL,
+	date DATE,
+	amount decimal(10,3) NOT NULL,
+	CONSTRAINT PRIMARY KEY (paymentID)
+);
+CREATE TABLE Goodreceivenote(
+	GRNno VARCHAR(20) NOT NULL,
+	batchno VARCHAR(20) NOT NULL,
+	orderID VARCHAR(20),
+	paymentID VARCHAR(20),
+	totaldiscount decimal(10,3),
+	totalamount decimal(10,2) NOT NULL,
+	qty decimal(10,2) NOT NULL,
+	CONSTRAINT PRIMARY KEY (GRNno),
+	CONSTRAINT FOREIGN KEY(batchno) REFERENCES batch(batchno)
+	ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT FOREIGN KEY(OrderID) REFERENCES Supplierorder(orderID)
+	ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT FOREIGN KEY(paymentID) REFERENCES Supplierpayment(paymentID)
+	ON UPDATE CASCADE ON DELETE CASCADE
+);
+CREATE TABLE Supplier(
+	supplierID VARCHAR(20) NOT NULL,
+	name VARCHAR(50) NOT NULL,
+	address VARCHAR(50),
+	company VARCHAR(30),
+	contactno INT(10) NOT NULL,
+	date DATE NOT NULL,
+	CONSTRAINT PRIMARY KEY (supplierID)
+);
+CREATE TABLE Supplierreturn(
+	srID VARCHAR(20) NOT NULL,
+	supplierID VARCHAR(20),
+	batchno VARCHAR(20),
+	reason VARCHAR(100),
+	qty decimal(10,2),
+	date DATE,
+	CONSTRAINT PRIMARY KEY (srID),
+	CONSTRAINT FOREIGN KEY(supplierID) REFERENCES supplier(supplierID)
+	ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT FOREIGN KEY(batchno) REFERENCES batch(batch)
+	ON UPDATE CASCADE ON DELETE CASCADE
+);
+CREATE TABLE Supplierorder(
+	orderID VARCHAR(20) NOT NULL,
+	supplierID VARCHAR(20),
+	CONSTRAINT PRIMARY KEY (orderID),
+	CONSTRAINT FOREIGN KEY(supplierID) REFERENCES supplier(supplierID)
+	ON UPDATE CASCADE ON DELETE CASCADE
+);
+CREATE TABLE Itembrand(
+	brandID VARCHAR(20) NOT NULL,
+	brand VARCHAR(20),
+	CONSTRAINT PRIMARY KEY (brandID)
+);
+CREATE TABLE Itemcategory(
+	categoryID VARCHAR(20) NOT NULL,
+	category VARCHAR(30) NOT NULL,
+	country VARCHAR(25) NOT NULL,
+	CONSTRAINT PRIMARY KEY (categoryID)
+);
+CREATE TABLE Item(
+	itemcode VARCHAR(20) NOT NULL,
+	batchno VARCHAR(20),
+	brandID VARCHAR(20),
+	categoryID VARCHAR(20),
+	name VARCHAR(200),
+	QTY decimal(10,3),
+	discount decimal(10,3),
+	price decimal(10,3),
+	CONSTRAINT PRIMARY KEY (itemcode),
+	CONSTRAINT FOREIGN KEY(categoryID) REFERENCES Itemcategory(categoryID)
+	ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT FOREIGN KEY(brandID) REFERENCES Itembrand(brandID)
+	ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT FOREIGN KEY(batchno) REFERENCES batch(batchno)
+	ON UPDATE CASCADE ON DELETE CASCADE
+);
+CREATE TABLE Supplierorderdetails(
+	orderID VARCHAR(20) NOT NULL,
+	itemcode VARCHAR(20),
+	qty decimal(10,2) NOT NULL,
+	CONSTRAINT FOREIGN KEY(orderID) REFERENCES Supplierorder(orderID)
+	ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT FOREIGN KEY(itemcode) REFERENCES Item(itemcode)
+	ON UPDATE CASCADE ON DELETE CASCADE
+);
+===========================================================================================
+				DATA
+-------------------------------------------------------------------------------------------
+INSERT INTO Customer VALUES('C001','Nimal','Karapitiya',0915673126,'2016-7-12');
+INSERT INTO Customer VALUES('C002','Kamal','Habaraduwa',0915609126,'2016-7-12');
+INSERT INTO Customer VALUES('C003','Sunimal','balapitiya',0915623126,'2016-7-12');
+INSERT INTO Customer VALUES('C004','perera','walahnduwa',0915687126,'2016-7-12');
+INSERT INTO Customer VALUES('C005','Dilan','kithulampitiya',0915673426,'2016-7-12');
+=========================================================================================
+INSERT INTO Vehicle VALUES('54-75640','C001','Toyota','Corolla','1200cc','Motorcar');
+INSERT INTO Vehicle VALUES('CK-4566','C003','Nissan','Nissansunny','1600cc','Motorcar');
+INSERT INTO Vehicle VALUES('KP-3456','C005','TATA','Q37','2500cc','lorry');
+INSERT INTO Vehicle VALUES('14-4567','C004','KIA','Sportage','1800cc','Motorcar');
+INSERT INTO Vehicle VALUES('AAC-3455','C002','Mitsubishi','RVR','1900cc','Motorcar');
+==========================================================================================
+INSERT INTO Servicecategory VALUES('CT001','any type','full service',9000);
+INSERT INTO Servicecategory VALUES('CT002','any type','engine wash',4500);
+INSERT INTO Servicecategory VALUES('CT003','any type','body wash',2500);
+INSERT INTO Servicecategory VALUES('CT004','any type','filterChange',3500);
+INSERT INTO Servicecategory VALUES('CT005','heavy vehicle','full service',10000);
+==========================================================================================
+INSERT INTO Servicedetails VALUES('CT001','00000001');
+INSERT INTO Servicedetails VALUES('CT001','03333333');
+INSERT INTO Servicedetails VALUES('CT001','45627854');
+INSERT INTO Servicedetails VALUES('CT003','21564890');
+INSERT INTO Servicedetails VALUES('CT002','59632489');
+===========================================================================================
+INSERT INTO Serviceinvoice VALUES('00000002','54-75640',2345.98,'2016-07-12');
+INSERT INTO Serviceinvoice VALUES('03333334','CK-4566',3678.64,'2016-07-12');
+INSERT INTO Serviceinvoice VALUES('45627852','KP-3456',3478.0,'2016-08-05');
+INSERT INTO Serviceinvoice VALUES('21564897','14-4567',1256.7,'2016-08-04');
+INSERT INTO Serviceinvoice VALUES('59632487','AAC-3455',89567.92,'2016-07-12');
+============================================================================================
+INSERT INTO Customerpayment VALUES('P001','00000001',12000.50,'2016-07-12');
+INSERT INTO Customerpayment VALUES('P002','03333333',11000.00,'2016-07-12');
+INSERT INTO Customerpayment VALUES('P003','45627854',10000.00,'2016-07-12');
+INSERT INTO Customerpayment VALUES('P004','21564890',3500.50,'2016-07-12');
+INSERT INTO Customerpayment VALUES('P005','59632489',6500.00,'2016-07-12');
+============================================================================================
+INSERT INTO batch VALUES('B001','00000001',25000.60,'2016-07-12');
+INSERT INTO batch VALUES('B002','03333333',32000.00,'2016-07-12');
+INSERT INTO batch VALUES('B003','45627854',75000.00,'2016-07-12');
+INSERT INTO batch VALUES('B004','21564890',67000.00,'2016-07-12');
+INSERT INTO batch VALUES('B005','59632489',59000.57,'2016-07-12');
+============================================================================================
+INSERT INTO Serviceitemdetails VALUES('00000001','B001',1,275.50,4000.00);
+INSERT INTO Serviceitemdetails VALUES('03333333','B005',1,150.00,2000.00);
+INSERT INTO Serviceitemdetails VALUES('45627854','B001',2,450.00,3500.00);
+INSERT INTO Serviceitemdetails VALUES('21564890','B003',1,345.58,2500.00);
+INSERT INTO Serviceitemdetails VALUES('59632489','B004',1,245.00,2389.00);
+============================================================================================
+INSERT INTO Supplierpayment VALUES('SP001','2016-05-12',23000.50);
+INSERT INTO Supplierpayment VALUES('SP002','2016-07-12',58000.00);
+INSERT INTO Supplierpayment VALUES('SP003','2016-06-02',34000.00);
+INSERT INTO Supplierpayment VALUES('SP004','2016-04-22',43984.00);
+INSERT INTO Supplierpayment VALUES('SP005','2016-07-05',34567.50);
+============================================================================================
+INSERT INTO Goodreceivenote VALUES('GRN001','B002','OID001','SP005',5600.00,75000.00,120.00);
+INSERT INTO Goodreceivenote VALUES('GRN002','B002','OID002','SP005',78000.00,5200.00,230.00);
+INSERT INTO Goodreceivenote VALUES('GRN003','B001','OID001','SP001',112000.40,10000,540.00);
+INSERT INTO Goodreceivenote VALUES('GRN004','B003','OID003','SP003',220000.00,20000.00,345.00);
+INSERT INTO Goodreceivenote VALUES('GRN005','B004','OID004','SP002',25000.00,1000.00,59.5);
+=============================================================================================
+INSERT INTO Supplier VALUES('SPL001','fernando','kandy','unimo',0912345668,'2016-07-12');
+INSERT INTO Supplier VALUES('SPL002','silva','kurunagala','dimo',0912356850,'2016-07-12');
+INSERT INTO Supplier VALUES('SPL003','somapala','ampara','izuzu',0913456743,'2016-07-12');
+INSERT INTO Supplier VALUES('SPL004','gihan','hambanthota','toyota',0913457430,'2016-07-12');
+INSERT INTO Supplier VALUES('SPL005','krishan','galle','nissan',0913457893,'2016-07-12');
+==============================================================================================
+INSERT INTO Supplierreturn VALUES('SRID001','SPL003','B003','not working',10.00,'2016-07-12');
+INSERT INTO Supplierreturn VALUES('SRID002','SPL001','B003','physical damage',15.00,'2016-07-12');
+INSERT INTO Supplierreturn VALUES('SRID003','SPL001','B005','not working',4.00,'2016-07-12');
+INSERT INTO Supplierreturn VALUES('SRID004','SPL005','B004','not working',1.00,'2016-05-01');
+INSERT INTO Supplierreturn VALUES('SRID005','SPL004','B005','missing razer',3.00,'2016-06-09');
+===============================================================================================
+INSERT INTO Supplierorder VALUES('OID001','SRID004');
+INSERT INTO Supplierorder VALUES('OID002','SRID002');
+INSERT INTO Supplierorder VALUES('OID003','SRID002');
+INSERT INTO Supplierorder VALUES('OID004','SRID002');
+INSERT INTO Supplierorder VALUES('OID005','SRID003');
+===============================================================================================
+INSERT INTO Itembrand VALUES('BRID001','toyota');
+INSERT INTO Itembrand VALUES('BRID002','toyota');
+INSERT INTO Itembrand VALUES('BRID003','kia');
+INSERT INTO Itembrand VALUES('BRID004','mitsubishi');
+INSERT INTO Itembrand VALUES('BRID005','nissan');
+================================================================================================
+INSERT INTO Itemcategory VALUES('ICID001','oil filter','Japan');
+INSERT INTO Itemcategory VALUES('ICID002','vacum filter','Japan');
+INSERT INTO Itemcategory VALUES('ICID003','engine oil','Germany');
+INSERT INTO Itemcategory VALUES('ICID004','air filter','china');
+INSERT INTO Itemcategory VALUES('ICID005','gear oil','india');
+=================================================================================================
+INSERT INTO Item VALUES('IC001','B002','BRID005','ICID001','Filter',100,10,1000);
+INSERT INTO Item VALUES('IC002','B004','BRID003','ICID002','air filter',50,20,20000);
+INSERT INTO Item VALUES('IC003','B001','BRID005','ICID001','Oil filter',500,15,1500000);
+INSERT INTO Item VALUES('IC004','B004','BRID001','ICID004','razors',2,5,25000);
+INSERT INTO Item VALUES('IC005','B005','BRID002','ICID002','Engine oil',10,5,18000);
+=================================================================================================
+INSERT INTO Supplierorderdetails VALUES('OID001','IC002',100.0);
+INSERT INTO Supplierorderdetails VALUES('OID001','IC003',200.0);
+INSERT INTO Supplierorderdetails VALUES('OID002','IC001',500.0);
+INSERT INTO Supplierorderdetails VALUES('OID005','IC004',50.0);
+INSERT INTO Supplierorderdetails VALUES('OID003','IC001',25.5);
